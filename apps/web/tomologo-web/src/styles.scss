@@ -41,18 +41,6 @@ app-link-atom a.footer__link:hover {
   color: rgba(0, 0, 0, 0.92);
 }
 
-app-link-atom a.topbar__lang {
-  color: #fff;
-  text-decoration: none;
-  opacity: 0.85;
-}
-app-link-atom a.topbar__lang:hover {
-  opacity: 1;
-}
-app-link-atom a.topbar__lang--active {
-  opacity: 1;
-}
-
 app-link-atom a.mini-cart__btn {
   width: 100%;
   height: 28px;
@@ -299,7 +287,10 @@ app-button-atom button.related__arrow {
   line-height: 1;
   color: rgba(0, 0, 0, 0.45);
   cursor: pointer;
-  justify-self: center;
+  flex-shrink: 0;
+}
+app-button-atom button.related__arrow--side {
+  align-self: center;
 }
 app-button-atom button.related__arrow:hover {
   color: rgba(0, 0, 0, 0.75);

@@ -6,6 +6,8 @@ export interface CartItem {
   name: string;
   image: string;
   unitPrice: number;
+  /** Sepete eklenen satırın para birimi (katalog gösterimi ile uyumlu). */
+  currency?: string;
   quantity: number;
   color?: string;
 }

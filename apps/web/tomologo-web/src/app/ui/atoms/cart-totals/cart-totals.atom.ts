@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { formatCatalogMoney } from '../../../core/currency/format-catalog-money';
 import { ButtonAtom } from '../button-atom/button-atom.atom';
 
 @Component({
@@ -54,26 +55,24 @@ import { ButtonAtom } from '../button-atom/button-atom.atom';
   ],
 })
 export class CartTotalsAtom {
-  /** Ara toplam / genel ara tutar (TRY) */
+  /** Ara toplam tutarı (sayısal). */
   readonly subTotal = input.required<number>();
   /** TOPLAM satırı; verilmezse ara toplam ile aynı gösterilir */
   readonly orderTotal = input<number | undefined>(undefined);
   /** Gönderim açıklama metni */
   readonly shippingHint = input<string>('Ödeme adımında hesaplanır');
+  /** Toplamların gösterim ISO para birimi (sepet satırlarıyla uyumlu). */
+  readonly currencyCode = input<string>('TRY');
 
   readonly checkout = output<void>();
 
-  private readonly formatter = new Intl.NumberFormat('tr-TR', {
-    style: 'currency',
-    currency: 'TRY',
-    minimumFractionDigits: 2,
-  });
-
-  protected readonly subTotalLabel = computed(() => this.formatter.format(this.subTotal()));
+  protected readonly subTotalLabel = computed(() =>
+    formatCatalogMoney(this.subTotal(), this.currencyCode()),
+  );
 
   protected readonly totalLabel = computed(() => {
     const t = this.orderTotal();
     const n = t === undefined || t === null ? this.subTotal() : t;
-    return this.formatter.format(n);
+    return formatCatalogMoney(n, this.currencyCode());
   });
 }

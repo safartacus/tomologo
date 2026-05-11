@@ -1,18 +1,16 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-revive-story-announcement',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <aside class="announce" aria-label="Marka mesajı">
-      <hr class="announce__line" />
-      <p class="announce__text">
-        20 yıl önce üç küçük kızın modayı oyunlaştırarak yarattığı renkli dünyanın bize
-        armağanı olan TOMOLOGO'nun kalbinde usta zanaatkarların elinden çıkmış zamansız
-        ve fonksiyonel parçalar yatar.
-      </p>
-    </aside>
+    @if (isActive() && text()) {
+      <aside class="announce" aria-label="Marka mesajı">
+        <hr class="announce__line" />
+        <p class="announce__text">{{ text() }}</p>
+      </aside>
+    }
   `,
   styles: [
     `
@@ -42,4 +40,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     `,
   ],
 })
-export class ReviveStoryAnnouncementAtom {}
+export class ReviveStoryAnnouncementAtom {
+  readonly isActive = input<boolean>(true);
+
+  readonly text = input<string>('');
+}

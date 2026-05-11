@@ -11,3 +11,5 @@ apps/web/tomologo-web/.angular/
 .DS_Store
 Thumbs.db
 .idea/
+.vs/
+*.csproj.user

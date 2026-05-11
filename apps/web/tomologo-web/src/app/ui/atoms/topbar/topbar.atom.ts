@@ -1,11 +1,14 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { LinkAtom } from '../link-atom/link-atom.atom';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { StyledTextDivisionAtom } from '../styled-text-division/styled-text-division.atom';
+import {
+  CatalogCurrencyService,
+  type SiteLanguageCode,
+} from '../../../core/currency/catalog-currency.service';
 
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [LinkAtom, StyledTextDivisionAtom],
+  imports: [StyledTextDivisionAtom],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="topbar">
@@ -15,19 +18,25 @@ import { StyledTextDivisionAtom } from '../styled-text-division/styled-text-divi
           text="ULUSLARARASI GÖNDERİM"
         />
         <div class="topbar__right">
-          <app-link-atom
-            cssClass="topbar__lang"
-            href="#"
-            text="EN"
-            ariaLabel="English"
-          />
+          <button
+            type="button"
+            class="topbar__lang"
+            [class.topbar__lang--active]="language() === 'en'"
+            (click)="pickLang('en')"
+            aria-label="English"
+          >
+            EN
+          </button>
           <span class="topbar__sep">|</span>
-          <app-link-atom
-            cssClass="topbar__lang topbar__lang--active"
-            href="#"
-            text="TR"
-            ariaLabel="Türkçe"
-          />
+          <button
+            type="button"
+            class="topbar__lang"
+            [class.topbar__lang--active]="language() === 'tr'"
+            (click)="pickLang('tr')"
+            aria-label="Türkçe"
+          >
+            TR
+          </button>
         </div>
       </div>
     </div>
@@ -59,8 +68,40 @@ import { StyledTextDivisionAtom } from '../styled-text-division/styled-text-divi
       .topbar__sep {
         opacity: 0.65;
       }
+      button.topbar__lang {
+        background: none;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        color: inherit;
+        letter-spacing: inherit;
+        text-transform: inherit;
+        cursor: pointer;
+        opacity: 0.85;
+      }
+      button.topbar__lang:hover {
+        opacity: 1;
+      }
+      button.topbar__lang--active {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        :host ::ng-deep app-styled-text-division-atom.topbar__left {
+          color: #d4b876;
+          font-weight: 500;
+        }
+      }
     `,
   ],
 })
-export class TopbarAtom {}
+export class TopbarAtom {
+  private readonly catalog = inject(CatalogCurrencyService);
 
+  protected readonly language = this.catalog.siteLanguage;
+
+  protected pickLang(code: SiteLanguageCode): void {
+    this.catalog.setSiteLanguage(code);
+  }
+}

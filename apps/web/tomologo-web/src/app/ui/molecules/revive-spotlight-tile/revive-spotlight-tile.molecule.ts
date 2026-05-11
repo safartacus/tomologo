@@ -1,30 +1,42 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { StyledTextDivisionAtom } from '../../atoms/styled-text-division/styled-text-division.atom';
 
 @Component({
   selector: 'app-revive-spotlight-tile',
   standalone: true,
-  imports: [StyledTextDivisionAtom],
+  imports: [RouterLink, StyledTextDivisionAtom],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <article class="reviveSpotlightTile">
-      <div class="reviveSpotlightTile__imgWrap">
-        <img
-          class="reviveSpotlightTile__img"
-          [src]="image"
-          [alt]="name"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-      <app-styled-text-division-atom cssClass="reviveSpotlightTile__caption" [text]="name" />
-    </article>
+    <a class="reviveSpotlightTile__link" [routerLink]="['/urun', productSlug]">
+      <article class="reviveSpotlightTile">
+        <div class="reviveSpotlightTile__imgWrap">
+          <img
+            class="reviveSpotlightTile__img"
+            [src]="image"
+            [alt]="name"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <app-styled-text-division-atom cssClass="reviveSpotlightTile__caption" [text]="name" />
+      </article>
+    </a>
   `,
   styles: [
     `
       :host {
         display: block;
         min-width: 0;
+      }
+      .reviveSpotlightTile__link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+      }
+      .reviveSpotlightTile__link:focus-visible {
+        outline: 2px solid #111;
+        outline-offset: 3px;
       }
       .reviveSpotlightTile {
         margin: 0;
@@ -49,4 +61,6 @@ import { StyledTextDivisionAtom } from '../../atoms/styled-text-division/styled-
 export class ReviveSpotlightTileMolecule {
   @Input({ required: true }) name = '';
   @Input({ required: true }) image = '';
+  /** Katalog ürün detayı yolu: `/urun/:slug` */
+  @Input({ required: true }) productSlug = '';
 }
