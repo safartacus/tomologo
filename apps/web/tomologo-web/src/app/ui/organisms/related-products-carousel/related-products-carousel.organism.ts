@@ -3,10 +3,18 @@ import {
   Component,
   OnDestroy,
   computed,
+  inject,
   input,
   signal,
 } from '@angular/core';
-import { MOCK_PRODUCTS } from '../../../core/data/mock-products.data';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap } from 'rxjs';
+import {
+  ProductCatalogApiService,
+  type CatalogProduct,
+} from '../../../core/api/product-catalog.api';
+import { CatalogCurrencyService } from '../../../core/currency/catalog-currency.service';
+import { formatCatalogMoney } from '../../../core/currency/format-catalog-money';
 import { ButtonAtom } from '../../atoms/button-atom/button-atom.atom';
 import { ProductCardMolecule } from '../../molecules/product-card/product-card.molecule';
 
@@ -20,37 +28,40 @@ import { ProductCardMolecule } from '../../molecules/product-card/product-card.m
       <section class="related">
         <div class="related__container">
           <div class="related__heading">
+            <h2 class="related__title">İLGİLİ ÜRÜNLER</h2>
+          </div>
+          <div class="related__line"></div>
+
+          <div
+            class="related__carousel"
+            (touchstart)="onRelatedTouchStart($event)"
+            (touchend)="onRelatedTouchEnd($event)"
+          >
             <app-button-atom
-              cssClass="related__arrow"
+              cssClass="related__arrow related__arrow--side"
               type="button"
               text="‹"
               ariaLabel="Önceki ürünler"
               (click)="prevRelatedPage()"
             />
-            <h2 class="related__title">İLGİLİ ÜRÜNLER</h2>
+            <div class="related__grid">
+              @for (product of visibleRelatedProducts(); track product.slug) {
+                <app-product-card
+                  [name]="product.name"
+                  [price]="product.price"
+                  [image]="product.image"
+                  [slug]="product.slug"
+                  [soldOut]="product.soldOut"
+                />
+              }
+            </div>
             <app-button-atom
-              cssClass="related__arrow"
+              cssClass="related__arrow related__arrow--side"
               type="button"
               text="›"
               ariaLabel="Sonraki ürünler"
               (click)="nextRelatedPage()"
             />
-          </div>
-          <div class="related__line"></div>
-
-          <div
-            class="related__grid"
-            (touchstart)="onRelatedTouchStart($event)"
-            (touchend)="onRelatedTouchEnd($event)"
-          >
-            @for (product of visibleRelatedProducts(); track product.slug) {
-              <app-product-card
-                [name]="product.name"
-                [price]="product.price"
-                [image]="product.image"
-                [slug]="product.slug"
-              />
-            }
           </div>
 
           @if (totalRelatedPages() > 1) {
@@ -91,9 +102,7 @@ import { ProductCardMolecule } from '../../molecules/product-card/product-card.m
         letter-spacing: 0.1em;
       }
       .related__heading {
-        display: grid;
-        grid-template-columns: 40px 1fr 40px;
-        align-items: center;
+        display: block;
       }
       .related__line {
         width: 34px;
@@ -101,7 +110,16 @@ import { ProductCardMolecule } from '../../molecules/product-card/product-card.m
         background: #d4c7a3;
         margin: 9px auto 22px;
       }
+      .related__carousel {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+      }
       .related__grid {
+        flex: 1 1 0;
+        min-width: 0;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 20px;
@@ -130,19 +148,27 @@ export class RelatedProductsCarouselOrganism implements OnDestroy {
   /** Ürün detayında mevcut ürünü carousel dışında bırakmak için */
   readonly excludeSlug = input<string | undefined>(undefined);
 
+  private readonly catalogApi = inject(ProductCatalogApiService);
+  private readonly catalogCurrency = inject(CatalogCurrencyService);
+
+  private readonly allProducts = toSignal(
+    toObservable(this.catalogCurrency.displayCurrency).pipe(
+      switchMap(() => this.catalogApi.listAll().pipe(catchError(() => of([] as CatalogProduct[])))),
+    ),
+    { initialValue: [] as CatalogProduct[] },
+  );
+
   protected readonly relatedProducts = computed(() => {
     const ex = this.excludeSlug();
     const list = ex
-      ? MOCK_PRODUCTS.filter((p) => p.slug !== ex)
-      : MOCK_PRODUCTS;
+      ? this.allProducts().filter((p) => p.slug !== ex)
+      : this.allProducts();
     return list.map((p) => ({
       slug: p.slug,
       name: p.name,
-      price: p.price.toLocaleString('tr-TR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
+      price: formatCatalogMoney(p.priceAmount, p.currency),
       image: p.image,
+      soldOut: p.quantityOnHand - p.quantityReserved <= 0,
     }));
   });
 

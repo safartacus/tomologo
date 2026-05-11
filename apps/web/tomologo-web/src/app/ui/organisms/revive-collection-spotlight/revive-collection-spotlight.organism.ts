@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { REVIVE_COLLECTION_SPOTLIGHT } from '../../../core/data/mock-products.data';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import type { HomepageReviveSpotlightItem } from '../../../core/api/homepage.api';
 import { ReviveSpotlightTileMolecule } from '../../molecules/revive-spotlight-tile/revive-spotlight-tile.molecule';
 
 @Component({
@@ -18,8 +18,12 @@ import { ReviveSpotlightTileMolecule } from '../../molecules/revive-spotlight-ti
       </div>
 
       <div class="reviveSpotlight__grid">
-        @for (item of items; track item.name) {
-          <app-revive-spotlight-tile [name]="item.name" [image]="item.image" />
+        @for (item of items(); track item.slug) {
+          <app-revive-spotlight-tile
+            [name]="item.name"
+            [image]="item.image"
+            [productSlug]="item.slug"
+          />
         }
       </div>
     </section>
@@ -72,5 +76,5 @@ import { ReviveSpotlightTileMolecule } from '../../molecules/revive-spotlight-ti
   ],
 })
 export class ReviveCollectionSpotlightOrganism {
-  protected readonly items = REVIVE_COLLECTION_SPOTLIGHT;
+  readonly items = input.required<HomepageReviveSpotlightItem[]>();
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { MockCartStore } from '../core/store/mock-cart.store';
 import { CartHeadAtom } from '../ui/atoms/cart-head/cart-head.atom';
 import { CartLineMolecule } from '../ui/molecules/cart-line/cart-line.molecule';
@@ -37,7 +37,7 @@ import { StyledTextDivisionAtom } from '../ui/atoms/styled-text-division/styled-
             <app-cart-coupon />
           </div>
 
-          <app-cart-totals [subTotal]="subTotal()" />
+          <app-cart-totals [subTotal]="subTotal()" [currencyCode]="totalsCurrency()" />
         </div>
       </div>
     </section>
@@ -82,6 +82,11 @@ export class CartPage {
   private readonly cartStore = inject(MockCartStore);
   protected readonly items = this.cartStore.items;
   protected readonly subTotal = this.cartStore.subTotal;
+
+  /** Tek para birimi varsayımı; karışık sepet ileride ayrı ele alınmalı. */
+  protected readonly totalsCurrency = computed(
+    () => this.items()[0]?.currency ?? 'TRY',
+  );
 
   protected increase(id: string): void {
     this.cartStore.increase(id);

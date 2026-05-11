@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, output } from '@angular/core';
+import { formatCatalogMoney } from '../../../core/currency/format-catalog-money';
 import { CartItem } from '../../../core/store/mock-cart.store';
 import { ButtonAtom } from '../../atoms/button-atom/button-atom.atom';
 
@@ -110,13 +111,7 @@ export class CartLineMolecule {
   readonly increaseQty = output<string>();
   readonly decreaseQty = output<string>();
 
-  private readonly formatter = new Intl.NumberFormat('tr-TR', {
-    style: 'currency',
-    currency: 'TRY',
-    minimumFractionDigits: 2,
-  });
-
   protected formatMoney(value: number): string {
-    return this.formatter.format(value);
+    return formatCatalogMoney(value, this.item.currency ?? 'TRY');
   }
 }

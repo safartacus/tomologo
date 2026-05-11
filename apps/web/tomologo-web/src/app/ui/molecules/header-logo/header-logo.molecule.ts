@@ -41,6 +41,13 @@ import { RouterLink } from '@angular/router';
           max-width: min(180px, 52vw);
         }
       }
+
+      @media (max-width: 768px) {
+        .hlog__img {
+          height: 36px;
+          max-width: min(160px, 58vw);
+        }
+      }
     `,
   ],
 })

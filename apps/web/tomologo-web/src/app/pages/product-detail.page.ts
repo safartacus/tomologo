@@ -1,13 +1,36 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
-import { MOCK_PRODUCTS } from '../core/data/mock-products.data';
+import { catchError, combineLatest, distinctUntilChanged, map, of, switchMap } from 'rxjs';
+import {
+  ProductCatalogApiService,
+  type CatalogProduct,
+} from '../core/api/product-catalog.api';
+import { CatalogCurrencyService } from '../core/currency/catalog-currency.service';
 import { MockCartStore } from '../core/store/mock-cart.store';
 import { AccordionAtom } from '../ui/atoms/accordion/accordion.atom';
 import { ButtonAtom } from '../ui/atoms/button-atom/button-atom.atom';
 import { LinkAtom } from '../ui/atoms/link-atom/link-atom.atom';
+import { formatCatalogMoney } from '../core/currency/format-catalog-money';
 import { RelatedProductsCarouselOrganism } from '../ui/organisms/related-products-carousel/related-products-carousel.organism';
+
+interface ProductDetailView {
+  slug: string;
+  name: string;
+  price: number;
+  currency: string;
+  image: string;
+  description: string;
+  colors: { name: string; hex: string }[];
+}
 
 @Component({
   selector: 'app-product-detail-page',
@@ -42,7 +65,7 @@ import { RelatedProductsCarouselOrganism } from '../ui/organisms/related-product
 
           <div class="info">
             <h1 class="info__title">{{ product().name }}</h1>
-            <div class="info__price">{{ formatPrice(product().price) }}</div>
+            <div class="info__price">{{ formatPrice(product().price, product().currency) }}</div>
             <p class="info__desc">
               {{ product().description }}
             </p>
@@ -197,16 +220,65 @@ export class ProductDetailPage {
 
   private readonly route = inject(ActivatedRoute);
   private readonly cartStore = inject(MockCartStore);
-  private readonly slug = toSignal(
-    this.route.paramMap.pipe(map((pm) => pm.get('slug'))),
-    { initialValue: this.route.snapshot.paramMap.get('slug') },
+  private readonly catalogApi = inject(ProductCatalogApiService);
+  private readonly catalogCurrency = inject(CatalogCurrencyService);
+
+  private readonly productRaw = toSignal(
+    combineLatest([
+      this.route.paramMap.pipe(
+        map((pm) => pm.get('slug') ?? 'mini-clutch-kemik'),
+        distinctUntilChanged(),
+      ),
+      toObservable(this.catalogCurrency.displayCurrency),
+    ]).pipe(
+      switchMap(([slug]) =>
+        this.catalogApi.getBySlug(slug).pipe(catchError(() => of(null as CatalogProduct | null))),
+      ),
+    ),
+    { initialValue: null as CatalogProduct | null },
   );
+
   protected readonly quantity = signal(1);
-  protected readonly product = computed(() => {
-    const slug = this.slug() ?? 'mini-clutch-kemik';
-    return MOCK_PRODUCTS.find((p) => p.slug === slug) ?? MOCK_PRODUCTS[0];
+
+  protected readonly product = computed((): ProductDetailView => {
+    const p = this.productRaw();
+    if (!p) {
+      return {
+        slug: '',
+        name: 'Yükleniyor…',
+        price: 0,
+        currency: 'TRY',
+        image: '',
+        description: '',
+        colors: [],
+      };
+    }
+    return {
+      slug: p.slug,
+      name: p.name,
+      price: p.priceAmount,
+      currency: p.currency,
+      image: p.image,
+      description: p.description,
+      colors: (p.colors ?? []).map((c) => ({ name: c.name, hex: c.hex })),
+    };
   });
-  protected readonly selectedColor = signal(this.product().colors[0]?.name ?? 'Default');
+
+  protected readonly selectedColor = signal<string>('');
+
+  constructor() {
+    effect(() => {
+      const raw = this.productRaw();
+      if (!raw) {
+        untracked(() => this.selectedColor.set(''));
+        return;
+      }
+      const first = raw.colors?.[0]?.name;
+      if (first) {
+        untracked(() => this.selectedColor.set(first));
+      }
+    });
+  }
 
   protected selectColor(name: string): void {
     this.selectedColor.set(name);
@@ -226,17 +298,14 @@ export class ProductDetailPage {
       name: this.product().name,
       image: this.product().image,
       unitPrice: this.product().price,
+      currency: this.product().currency,
       quantity: this.quantity(),
       color: this.selectedColor(),
     });
   }
 
-  protected formatPrice(price: number): string {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: 'TRY',
-      minimumFractionDigits: 2,
-    }).format(price);
+  protected formatPrice(price: number, currency: string): string {
+    return formatCatalogMoney(price, currency);
   }
 }
 

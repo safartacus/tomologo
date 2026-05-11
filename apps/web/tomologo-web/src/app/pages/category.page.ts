@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { BreadcrumbAtom } from '../ui/atoms/breadcrumb/breadcrumb.atom';
 import { ButtonAtom } from '../ui/atoms/button-atom/button-atom.atom';
 import { LinkAtom } from '../ui/atoms/link-atom/link-atom.atom';
@@ -7,9 +7,13 @@ import { StyledTextDivisionAtom } from '../ui/atoms/styled-text-division/styled-
 import { PaginationDescAtom } from '../ui/atoms/pagination-desc/pagination-desc.atom';
 import { CategoryProductGridOrganism } from '../ui/organisms/category-product-grid/category-product-grid.organism';
 import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
+import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs';
 import { MockCartStore } from '../core/store/mock-cart.store';
-import { MOCK_PRODUCTS, formatTry } from '../core/data/mock-products.data';
+import { formatCatalogMoney } from '../core/currency/format-catalog-money';
+import { formatTry } from '../core/data/mock-products.data';
+import { ProductCatalogApiService, type CatalogProduct } from '../core/api/product-catalog.api';
+import { CatalogCurrencyService } from '../core/currency/catalog-currency.service';
 
 @Component({
   selector: 'app-category-page',
@@ -144,6 +148,8 @@ import { MOCK_PRODUCTS, formatTry } from '../core/data/mock-products.data';
 export class CategoryPage {
   private readonly route = inject(ActivatedRoute);
   private readonly cartStore = inject(MockCartStore);
+  private readonly catalogApi = inject(ProductCatalogApiService);
+  private readonly catalogCurrency = inject(CatalogCurrencyService);
 
   private readonly catalogScope = toSignal(
     this.route.data.pipe(
@@ -168,6 +174,29 @@ export class CategoryPage {
     () => this.slugParam() ?? 'mini-clutch',
   );
 
+  private readonly productsFromApi = toSignal(
+    combineLatest([
+      this.route.data.pipe(
+        map((d) => (d['catalogScope'] as 'all' | 'category' | undefined) ?? 'category'),
+        distinctUntilChanged(),
+      ),
+      this.route.paramMap.pipe(
+        map((pm) => pm.get('slug')),
+        distinctUntilChanged(),
+      ),
+      toObservable(this.catalogCurrency.displayCurrency),
+    ]).pipe(
+      switchMap(([scope, slug]) => {
+        if (scope === 'all') {
+          return this.catalogApi.listAll();
+        }
+        return this.catalogApi.listByCategory(slug ?? 'mini-clutch');
+      }),
+      catchError(() => of([] as CatalogProduct[])),
+    ),
+    { initialValue: [] as CatalogProduct[] },
+  );
+
   protected readonly breadcrumbItems = computed(() => {
     if (this.catalogScope() === 'all') {
       return [
@@ -186,21 +215,14 @@ export class CategoryPage {
     ];
   });
 
-  protected readonly products = computed(() => {
-    const list =
-      this.catalogScope() === 'all'
-        ? MOCK_PRODUCTS
-        : MOCK_PRODUCTS.filter((p) => p.category === this.categorySlug());
-    return list.map((p) => ({
+  protected readonly products = computed(() =>
+    this.productsFromApi().map((p) => ({
       slug: p.slug,
       name: p.name,
-      price: p.price.toLocaleString('tr-TR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
+      price: formatCatalogMoney(p.priceAmount, p.currency),
       image: p.image,
-    }));
-  });
+    })),
+  );
 
   protected formatMoney(value: number): string {
     return formatTry(value);

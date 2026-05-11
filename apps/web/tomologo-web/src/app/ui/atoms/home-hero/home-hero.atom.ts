@@ -1,63 +1,58 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { HomeHeroCampaignBannerAtom } from '../home-hero-campaign-banner/home-hero-campaign-banner.atom';
 
 @Component({
   selector: 'app-home-hero',
   standalone: true,
+  imports: [HomeHeroCampaignBannerAtom],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="homeHero" aria-label="Kampanya">
-      <div class="homeHero__banner">
-        ANNELER GÜNÜNE ÖZEL "ANNELERGÜNÜ30" KODUYLA SEPETTE %30 İNDİRİM!
-      </div>
+    <section
+      class="homeHero"
+      [attr.aria-label]="bannerTitle() || 'Kampanya'"
+      [style.background]="heroBackground()"
+    >
+      <app-home-hero-campaign-banner
+        [isActive]="campaignActive()"
+        [text]="campaignTitle()"
+      />
     </section>
   `,
   styles: [
     `
+      /* Masaüstü: 1905×640; mobil: 430×932 */
       .homeHero {
-        height: 520px;
         width: 100vw;
         margin-left: calc(50% - 50vw);
         margin-right: calc(50% - 50vw);
-        background:
-          url('https://tomologo-official.com/wp-content/uploads/2024/12/tomologo-canta-banner-scaled.jpg')
-            center center / cover no-repeat,
-          #ddd;
+        aspect-ratio: 1905 / 640;
         position: relative;
         overflow: hidden;
       }
-      .homeHero__banner {
-        position: absolute;
-        left: 50%;
-        top: 98px;
-        transform: translateX(-50%);
-        background: rgb(255, 75, 74);
-        color: #fff;
-        padding: 0 12px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 31px;
-        font-weight: 400;
-        letter-spacing: 0;
-        line-height: 40px;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
 
-      @media (max-width: 980px) {
-        .homeHero__banner {
-          top: 92px;
-          font-size: 18px;
-          line-height: 24px;
-          height: auto;
-          padding: 6px 10px;
-          white-space: normal;
-          text-align: center;
-          width: calc(100% - 32px);
+      @media (max-width: 768px) {
+        .homeHero {
+          aspect-ratio: 430 / 932;
         }
       }
     `,
   ],
 })
-export class HomeHeroAtom {}
+export class HomeHeroAtom {
+  /** Hero arka plan görseli URL’si */
+  readonly bannerUrl = input.required<string>();
+
+  /** Erişilebilirlik / yönetim etiketi (ör. defaultBanner) */
+  readonly bannerTitle = input<string>('');
+
+  /** Kampanya şeridindeki metin */
+  readonly campaignTitle = input<string>('');
+
+  /** false ise kırmızı şerit gösterilmez (admin kampanyayı kapatabilir) */
+  readonly campaignActive = input<boolean>(false);
+
+  /** `cover` yüksekliği doldururken `center top` üst kısmı (gökyüzü vb.) korur; `center` üst–altı eşit keserdi. */
+  protected readonly heroBackground = computed(
+    () => `url(${JSON.stringify(this.bannerUrl())}) center top / cover no-repeat, #ddd`,
+  );
+}

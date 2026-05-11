@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { formatCatalogMoney } from '../../../core/currency/format-catalog-money';
 import { MockCartStore } from '../../../core/store/mock-cart.store';
 import { ButtonAtom } from '../../atoms/button-atom/button-atom.atom';
 import { LinkAtom } from '../../atoms/link-atom/link-atom.atom';
@@ -10,11 +11,16 @@ import { LinkAtom } from '../../atoms/link-atom/link-atom.atom';
   imports: [RouterLink, ButtonAtom, LinkAtom],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-link-atom cssClass="hus__auth" href="#" text="Giriş Yap / Kayıt Ol" />
-    <span class="hus__rule" aria-hidden="true"></span>
-    <app-button-atom cssClass="hus__icon" type="button" ariaLabel="Ara">
-      <span class="hus__glyph" aria-hidden="true">⌕</span>
-    </app-button-atom>
+    <!-- Emulated encapsulation: gizleme sınıfı bu bileşenin şablonunda olmalı; alt atomlardaki <a> eşleşmez. -->
+    <span class="hus__desktopOnly">
+      <app-link-atom cssClass="hus__auth" href="#" text="Giriş Yap / Kayıt Ol" />
+    </span>
+    <span class="hus__rule hus__desktopOnly" aria-hidden="true"></span>
+    <span class="hus__desktopOnly">
+      <app-button-atom cssClass="hus__icon" type="button" ariaLabel="Ara">
+        <span class="hus__glyph" aria-hidden="true">⌕</span>
+      </app-button-atom>
+    </span>
 
     <div class="hus__cartWrap">
       <a
@@ -45,7 +51,7 @@ import { LinkAtom } from '../../atoms/link-atom/link-atom.atom';
                   <div class="hus__miniMeta">
                     <div class="hus__miniName">{{ item.name }}</div>
                     <div class="hus__miniQty">
-                      {{ item.quantity }} × {{ formatTry(item.unitPrice) }}
+                      {{ item.quantity }} × {{ formatMoney(item.unitPrice, item.currency) }}
                     </div>
                   </div>
                   <button
@@ -62,7 +68,7 @@ import { LinkAtom } from '../../atoms/link-atom/link-atom.atom';
           }
           <div class="hus__miniSub">
             <span>Ara toplam</span>
-            <strong>{{ formatTry(subTotal()) }}</strong>
+            <strong>{{ formatMoney(subTotal(), subTotalCurrency()) }}</strong>
           </div>
           <div class="hus__miniActions">
             <app-link-atom
@@ -234,9 +240,13 @@ import { LinkAtom } from '../../atoms/link-atom/link-atom.atom';
         gap: 8px;
         padding: 12px 14px 0;
       }
-      @media (max-width: 920px) {
-        :host {
-          grid-area: actions;
+
+      @media (max-width: 768px) {
+        .hus__desktopOnly {
+          display: none !important;
+        }
+        .hus__badge {
+          background: #2ea054;
         }
       }
     `,
@@ -244,18 +254,18 @@ import { LinkAtom } from '../../atoms/link-atom/link-atom.atom';
 })
 export class HeaderUserSpotMolecule {
   private readonly cartStore = inject(MockCartStore);
-  private readonly money = new Intl.NumberFormat('tr-TR', {
-    style: 'currency',
-    currency: 'TRY',
-    minimumFractionDigits: 2,
-  });
 
   protected readonly items = this.cartStore.items;
   protected readonly subTotal = this.cartStore.subTotal;
   protected readonly cartCount = this.cartStore.totalQuantity;
 
-  protected formatTry(value: number): string {
-    return this.money.format(value);
+  /** Ara toplam etiketi: tek para birimi varsayımı (ilk satır). */
+  protected readonly subTotalCurrency = computed(
+    () => this.items()[0]?.currency ?? 'TRY',
+  );
+
+  protected formatMoney(value: number, currency?: string): string {
+    return formatCatalogMoney(value, currency ?? 'TRY');
   }
 
   protected onRemoveLine(ev: Event, id: string): void {
