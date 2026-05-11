@@ -1,0 +1,361 @@
+:root {
+  --container: 1180px;
+  --page-pad: 16px;
+  --text: #111;
+  --muted: rgba(0, 0, 0, 0.72);
+  --bg: #ffffff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial,
+    sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+/* app-link-atom: iç <a> stilleri (host display:contents; sınıflar iç anchor’da) */
+app-link-atom a.footer__link {
+  display: block;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.72);
+  text-decoration: none;
+  padding: 3px 0;
+}
+app-link-atom a.footer__link:hover {
+  color: rgba(0, 0, 0, 0.92);
+}
+
+app-link-atom a.topbar__lang {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.85;
+}
+app-link-atom a.topbar__lang:hover {
+  opacity: 1;
+}
+app-link-atom a.topbar__lang--active {
+  opacity: 1;
+}
+
+app-link-atom a.mini-cart__btn {
+  width: 100%;
+  height: 28px;
+  border: 0;
+  background: #8f825c;
+  color: #fff;
+  font-size: 10px;
+  margin-top: 6px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+app-link-atom a.mini-cart__btn--outline {
+  background: #fff;
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+app-link-atom a.hus__auth {
+  font-size: 12px;
+  color: #111;
+  text-decoration: none;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+app-link-atom a.hus__auth:hover {
+  opacity: 1;
+}
+app-link-atom a.hus__miniBtn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 10px 12px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 0;
+}
+app-link-atom a.hus__miniBtn--ghost {
+  background: #fff;
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+app-link-atom a.hus__miniBtn--ghost:hover {
+  background: #f9f9f9;
+}
+app-link-atom a.hus__miniBtn--primary {
+  background: #8f825c;
+  color: #fff;
+  border: 1px solid #8f825c;
+}
+app-link-atom a.hus__miniBtn--primary:hover {
+  filter: brightness(1.05);
+}
+
+app-link-atom a.breadcrumb__link {
+  color: inherit;
+  text-decoration: none;
+}
+app-link-atom a.breadcrumb__link:hover {
+  text-decoration: underline;
+}
+
+.detail__breadcrumbs app-link-atom a.detail__crumb {
+  color: inherit;
+  text-decoration: none;
+}
+
+app-link-atom a.hnl {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #111;
+  text-decoration: none;
+  opacity: 0.9;
+}
+app-link-atom a.hnl:hover {
+  opacity: 1;
+}
+
+app-link-atom a.hsu__trigger {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #111;
+  text-decoration: none;
+  opacity: 0.9;
+}
+app-link-atom a.hsu__trigger:hover {
+  opacity: 1;
+}
+app-link-atom a.hsu__colLink {
+  display: block;
+  padding: 7px 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.75);
+}
+app-link-atom a.hsu__colLink:hover {
+  background: #f7f7f7;
+}
+
+app-link-atom a.hurk__trigger {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #111;
+  text-decoration: none;
+  opacity: 0.9;
+}
+app-link-atom a.hurk__trigger:hover {
+  opacity: 1;
+}
+app-link-atom a.hurk__parent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.82);
+}
+app-link-atom a.hurk__parent .hurk__parentChev {
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0.45;
+}
+.hurk__group:hover > app-link-atom a.hurk__parent,
+app-link-atom a.hurk__parent:hover,
+app-link-atom a.hurk__parent:focus-visible {
+  color: #8f825c;
+}
+.hurk__group:hover > app-link-atom a.hurk__parent .hurk__parentChev {
+  opacity: 1;
+  color: #8f825c;
+}
+app-link-atom a.hurk__flyoutLink {
+  display: block;
+  padding: 8px 14px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.78);
+}
+app-link-atom a.hurk__flyoutLink:hover {
+  background: #f7f7f7;
+}
+app-link-atom a.hurk__leaf {
+  display: block;
+  padding: 9px 14px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.82);
+}
+.hurk__group--leaf app-link-atom a.hurk__leaf:hover,
+app-link-atom a.hurk__leaf:hover {
+  color: #8f825c;
+}
+
+app-button-atom button.category__filter {
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+app-button-atom button.cartCoupon__btn {
+  height: 30px;
+  border: 0;
+  background: #111;
+  color: #fff;
+  padding: 0 12px;
+  font-size: 10px;
+  cursor: pointer;
+}
+app-button-atom button.cartCoupon__btn--ghost {
+  background: #f1f1f1;
+  color: #111;
+}
+
+app-button-atom button.cartTotals__checkout {
+  margin-top: 12px;
+  width: 100%;
+  height: 34px;
+  border: 0;
+  background: #8f825c;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+app-button-atom button.cartLine__remove {
+  border: 0;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+}
+app-button-atom button.cartLine__qtyBtn {
+  width: 22px;
+  height: 26px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+app-header-user-spot app-button-atom button.hus__icon {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #111;
+  opacity: 0.9;
+  position: relative;
+  font-size: 16px;
+  line-height: 1;
+}
+app-header-user-spot app-button-atom button.hus__icon:hover {
+  opacity: 1;
+}
+
+app-button-atom button.related__arrow {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  justify-self: center;
+}
+app-button-atom button.related__arrow:hover {
+  color: rgba(0, 0, 0, 0.75);
+}
+app-button-atom button.related__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #b9b9b9;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+app-button-atom button.related__dot.related__dot--active {
+  background: #222;
+}
+
+app-button-atom button.info__qtyBtn {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+app-button-atom button.addBtn {
+  height: 30px;
+  border: 0;
+  background: #111;
+  color: #fff;
+  padding: 0 18px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+app-link-atom a.product-card__imageLink {
+  display: block;
+  text-decoration: none;
+}
+app-link-atom a.product-card__name {
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.75);
+  text-decoration: none;
+}
+
+app-styled-text-division-atom.footer__copy {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.6);
+}
+app-styled-text-division-atom.reviveSpotlightTile__caption {
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.78);
+  line-height: 1.35;
+}

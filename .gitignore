@@ -1,0 +1,13 @@
+# Web (Angular)
+apps/web/tomologo-web/node_modules/
+apps/web/tomologo-web/dist/
+apps/web/tomologo-web/.angular/
+
+# .NET
+**/bin/
+**/obj/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/

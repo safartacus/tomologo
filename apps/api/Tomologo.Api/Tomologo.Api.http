@@ -1,0 +1,6 @@
+@Tomologo.Api_HostAddress = http://localhost:5063
+
+GET {{Tomologo.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
